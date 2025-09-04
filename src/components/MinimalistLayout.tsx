@@ -1,36 +1,36 @@
-import { Box, IconButton, Typography } from "@mui/material"
-import SettingsIcon from "@mui/icons-material/Settings"
-import LogoutIcon from "@mui/icons-material/Logout"
-import { D3Chart } from "./D3Chart"
-import { PointsTable } from "./PointsTable"
-
+import { Box, IconButton, Typography } from "@mui/material";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { D3Chart } from "./D3Chart";
+import { PointsTable } from "./PointsTable";
 
 interface Point {
-  id: string
-  name: string
-  x: number
-  y: number
+  id: string;
+  name: string;
+  x: number;
+  y: number;
 }
 
 interface MinimalistDashboardProps {
-  points: Point[]
-  setPoints: (points: Point[]) => void
-  hoveredPointId: string | null
-  setHoveredPointId: (id: string | null) => void
-  onLogout?: () => void
-  selectedLayout: string
-  setSelectedLayout: (layout: string) => void,
-  handleAddPoint: () => void,
-  newPoint: { name: string; x: number; y: number }
-  setNewPoint: (point: { name: string; x: number; y: number }) => void
-  addDialogOpen: boolean
-  setAddDialogOpen: (open: boolean) => void
+  points: Point[];
+  setPoints: (points: Point[]) => void;
+  hoveredPointId: string | null;
+  setHoveredPointId: (id: string | null) => void;
+  onLogout?: () => void;
+  selectedLayout: string;
+  setSelectedLayout: (layout: string) => void;
+  handleAddPoint: () => void;
+  newPoint: { name: string; x: number; y: number };
+  setNewPoint: (point: { name: string; x: number; y: number }) => void;
+  addDialogOpen: boolean;
+  setAddDialogOpen: (open: boolean) => void;
+  editingPoint: Point | null;
+  setEditingPoint: (point: Point | null) => void;
 }
 
 export function MinimalistDashboard({
   editingPoint,
   setEditingPoint,
-  setPoints,
   hoveredPointId,
   setHoveredPointId,
   onLogout,
@@ -38,7 +38,7 @@ export function MinimalistDashboard({
   setAddDialogOpen,
   addDialogOpen,
   newPoint,
-  setNewPoint
+  setNewPoint,
 }: MinimalistDashboardProps) {
   return (
     <Box display="flex" minHeight="100vh">
@@ -78,14 +78,19 @@ export function MinimalistDashboard({
             <Typography variant="h4" fontWeight={300}>
               Graph Studio
             </Typography>
-            <Typography variant="body1" color="text.secondary" maxWidth="600px" mx="auto">
-              Create and manipulate data points with precision. Click to add, drag to move, edit to refine.
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              maxWidth="600px"
+              mx="auto"
+            >
+              Create and manipulate data points with precision. Click to add,
+              drag to move, edit to refine.
             </Typography>
           </Box>
 
           {/* D3 Chart */}
           <D3Chart
-            setPoints={setPoints}
             hoveredPointId={hoveredPointId}
             onPointHover={setHoveredPointId}
           />
@@ -107,5 +112,5 @@ export function MinimalistDashboard({
         </Box>
       </Box>
     </Box>
-  )
+  );
 }

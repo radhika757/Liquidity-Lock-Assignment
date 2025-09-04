@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { MinimalistDashboard } from "../components/MinimalistLayout";
 import { addPoint, updatePoint } from "../store/pointsSlice";
 import type { AppDispatch } from "../store";
@@ -26,7 +26,11 @@ export function Dashboard() {
   const [selectedLayout, setSelectedLayout] = useState<string>("minimalist");
 
   // Temporary state for adding a new point (from dialog/form)
-  const [newPoint, setNewPoint] = useState<{ name: string; x: number; y: number }>({
+  const [newPoint, setNewPoint] = useState<{
+    name: string;
+    x: number;
+    y: number;
+  }>({
     name: "",
     x: 0,
     y: 0,
@@ -34,35 +38,23 @@ export function Dashboard() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingPoint, setEditingPoint] = useState<Point | null>(null);
 
-  const generateRandomName = (): string => {
-    const adjectives = [
-      "Alpha","Beta","Gamma","Delta","Epsilon","Zeta","Eta","Theta","Iota","Kappa"
-    ];
-    const nouns = [
-      "Point","Node","Vertex","Marker","Spot","Location","Position","Coordinate","Pin","Dot"
-    ];
-    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-    return `${randomAdjective} ${randomNoun}`;
-  };
-
   const handleAddPoint = () => {
-    // const pointToAdd: Point = {
-    //   id: nextId.toString(),
-    //   name: newPoint.name || generateRandomName(),
-    //   x: newPoint.x,
-    //   y: newPoint.y,
-    // };
-    // console.log("[v0] Adding point from table:", pointToAdd);
-    // setPoints([...points, pointToAdd]);
-     if (editingPoint) {
+    if (editingPoint) {
       dispatch(updatePoint({ id: editingPoint.id, ...newPoint }));
     } else {
-      dispatch(addPoint(newPoint));
+      const pointToAdd = {
+        id: nextId.toString(),
+        name: newPoint.name || `Point ${nextId}`,
+        x: newPoint.x,
+        y: newPoint.y,
+      };
+      dispatch(addPoint(pointToAdd));
+      setNextId(nextId + 1);
     }
-    setNextId(nextId + 1);
+
     setAddDialogOpen(false);
     setNewPoint({ name: "", x: 0, y: 0 });
+    setEditingPoint(null);
   };
 
   const layouts = {

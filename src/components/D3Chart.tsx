@@ -4,7 +4,7 @@ import * as d3 from "d3";
 import { useSelector, useDispatch } from "react-redux";
 
 import type { AppDispatch, RootState } from "../store";
-import { addPoint, updatePoint } from "../store/pointsSlice";
+import { addPoint, updatePoint, type Point } from "../store/pointsSlice";
 
 export function D3Chart() {
   const points = useSelector((state: RootState) => state.points.points);
@@ -72,12 +72,9 @@ export function D3Chart() {
       .attr("font-size", 14)
       .text("Y");
 
-    // -------------------------------
-    // ENTER - UPDATE - EXIT for points
-    // -------------------------------
     const circles = svg
-      .selectAll<SVGCircleElement, any>("circle")
-      .data(points, (d: any) => d.id);
+      .selectAll<SVGCircleElement, Point>("circle")
+      .data(points, (d: Point) => d.id);
 
     // EXIT
     circles.exit().remove();
@@ -89,7 +86,7 @@ export function D3Chart() {
       .attr("r", 8)
       .attr("fill", "steelblue")
       .call(
-        d3.drag<SVGCircleElement, any>().on("drag", (event, d) => {
+        d3.drag<SVGCircleElement, Point>().on("drag", (event, d) => {
           const [mouseX, mouseY] = d3.pointer(event, svg.node());
           const newX = xScale.invert(mouseX);
           const newY = yScale.invert(mouseY);

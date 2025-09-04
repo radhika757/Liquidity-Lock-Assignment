@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   Button,
   Card,
@@ -8,18 +8,19 @@ import {
   Typography,
   TextField,
   Box,
-} from "@mui/material"
+} from "@mui/material";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
+import { FirebaseError } from "firebase/app";
 
 export function LoginForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
- const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
@@ -28,8 +29,14 @@ export function LoginForm() {
       await signInWithEmailAndPassword(auth, email, password);
       localStorage.setItem("isAuthenticated", "true");
       navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof FirebaseError) {
+        setError(err.message);
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -85,8 +92,11 @@ export function LoginForm() {
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
+          {error && (
+            <p style={{ color: "red", marginTop: "0.5rem" }}>{error}</p>
+          )}
         </Box>
       </CardContent>
     </Card>
-  )
+  );
 }

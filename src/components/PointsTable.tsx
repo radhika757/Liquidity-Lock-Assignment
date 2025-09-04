@@ -77,6 +77,7 @@ export function PointsTable({
             size="small"
             onClick={(e) => {
               e.stopPropagation();
+              setEditingPoint(params.row);
               setNewPoint({
                 name: params.row.name,
                 x: params.row.x,
@@ -123,10 +124,10 @@ export function PointsTable({
 
   const handleOpenAddDialog = (point?: Point) => {
     if (point) {
-      setEditingPoint(point);
+      setEditingPoint(point); // mark as editing
       setNewPoint({ name: point.name, x: point.x, y: point.y });
     } else {
-      setEditingPoint(null);
+      setEditingPoint(null); // mark as adding new
       setNewPoint({ name: "", x: 0, y: 0 });
     }
     setAddDialogOpen(true);
@@ -137,15 +138,16 @@ export function PointsTable({
       dispatch(updatePoint({ id: editingPoint.id, ...newPoint }));
     } else {
       const name = newPoint.name || getNextPointName(points);
-
-      // Compute the next ID
       const maxId =
         points.length > 0 ? Math.max(...points.map((p) => Number(p.id))) : 0;
       const id = (maxId + 1).toString();
 
       dispatch(addPoint({ id, name, x: newPoint.x, y: newPoint.y }));
     }
+
+    setEditingPoint(null); // reset
     setAddDialogOpen(false);
+    setNewPoint({ name: "", x: 0, y: 0 });
   };
 
   return (
