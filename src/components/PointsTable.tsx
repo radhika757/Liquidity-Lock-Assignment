@@ -177,34 +177,50 @@ export function PointsTable({
         </Box>
 
         {/* DataGrid */}
-        <DataGrid
-          rows={points}
-          columns={columns}
-          getRowId={(row) => row.id}
-          onRowClick={(params) => onPointHover(params.id.toString())}
-          processRowUpdate={(newRow) => {
-            dispatch(
-              updatePoint({
-                id: newRow.id,
-                x: newRow.x,
-                y: newRow.y,
-                name: newRow.name,
-              })
-            );
-            return newRow;
+        <div
+          style={{ height: 400, width: 800 }}
+          onMouseMove={(e) => {
+            const row = (e.target as HTMLElement).closest(
+              ".MuiDataGrid-row"
+            ) as HTMLElement | null;
+            const id = row?.dataset.id ?? null;
+            if (id !== hoveredPointId) {
+              onPointHover(id);
+            }
           }}
-          sx={{
-            "& .MuiDataGrid-row:hover": {
-              backgroundColor: "rgba(0,0,0,0.04)",
-            },
-            ...(hoveredPointId && {
-              [`& .MuiDataGrid-row[data-id="${hoveredPointId}"]:hover, & .MuiDataGrid-row[data-id="${hoveredPointId}"]`]:
-                {
-                  backgroundColor: "rgba(34,197,94,0.2)",
-                },
-            }),
+          onMouseLeave={() => {
+            onPointHover(null);
           }}
-        />
+        >
+          <DataGrid
+            rows={points}
+            columns={columns}
+            getRowId={(row) => row.id}
+            processRowUpdate={(newRow) => {
+              dispatch(
+                updatePoint({
+                  id: newRow.id,
+                  x: newRow.x,
+                  y: newRow.y,
+                  name: newRow.name,
+                })
+              );
+              return newRow;
+            }}
+            getRowClassName={(params) =>
+              params.id === hoveredPointId ? "hovered-row" : ""
+            }
+            onRowClick={(params) => onPointHover(params.id.toString())}
+            sx={{
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: "rgba(0,0,0,0.04)",
+              },
+              "& .hovered-row": {
+                backgroundColor: "rgba(34,197,94,0.2) !important",
+              },
+            }}
+          />
+        </div>
       </Box>
 
       <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)}>

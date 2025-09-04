@@ -6,7 +6,13 @@ import { useSelector, useDispatch } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import { addPoint, updatePoint, type Point } from "../store/pointsSlice";
 
-export function D3Chart() {
+export function D3Chart({
+  hoveredPointId,
+  onPointHover,
+}: {
+  hoveredPointId: string | null;
+  onPointHover: (id: string | null) => void;
+}) {
   const points = useSelector((state: RootState) => state.points.points);
   const dispatch = useDispatch<AppDispatch>();
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -72,6 +78,7 @@ export function D3Chart() {
       .attr("font-size", 14)
       .text("Y");
 
+    // Bind data to circles
     const circles = svg
       .selectAll<SVGCircleElement, Point>("circle")
       .data(points, (d: Point) => d.id);
@@ -85,6 +92,12 @@ export function D3Chart() {
       .append("circle")
       .attr("r", 8)
       .attr("fill", "steelblue")
+      .on("mouseover", (event, d) => {
+        onPointHover(d.id); // highlight row
+      })
+      .on("mouseout", () => {
+        onPointHover(null); // remove highlight
+      })
       .call(
         d3.drag<SVGCircleElement, Point>().on("drag", (event, d) => {
           const [mouseX, mouseY] = d3.pointer(event, svg.node());
@@ -94,11 +107,14 @@ export function D3Chart() {
         })
       );
 
-    // ENTER + UPDATE
+    // ENTER + UPDATE: update position and fill based on hoveredPointId
     enter
       .merge(circles)
       .attr("cx", (d) => xScale(d.x))
-      .attr("cy", (d) => yScale(d.y));
+      .attr("cy", (d) => yScale(d.y))
+      .attr("fill", (d) =>
+        d.id === hoveredPointId ? "limegreen" : "steelblue"
+      );
 
     // Double-click to add new points
     svg.on("dblclick", (event) => {
@@ -119,7 +135,7 @@ export function D3Chart() {
 
       dispatch(addPoint(newPointObj));
     });
-  }, [points, dispatch]);
+  }, [points, hoveredPointId, dispatch]);
 
   return (
     <div style={{ width: "100%", height: "650px" }}>
