@@ -1,17 +1,11 @@
 import { Box, IconButton, Typography } from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { D3Chart } from "./D3Chart";
 import { PointsTable } from "./PointsTable";
+import type { Point } from "../store/pointsSlice";
 
-interface Point {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-}
-
-interface MinimalistDashboardProps {
+// Props interface for MinimalistDashboard
+export interface MinimalistDashboardProps {
   points: Point[];
   setPoints: (points: Point[]) => void;
   hoveredPointId: string | null;
@@ -46,7 +40,7 @@ export function MinimalistDashboard({
       <Box
         width={64}
         bgcolor="background.paper"
-        borderRight="1px solid"
+        borderRight={1}
         borderColor="divider"
         display="flex"
         flexDirection="column"
@@ -60,13 +54,13 @@ export function MinimalistDashboard({
           color="primary.contrastText"
           fontWeight="bold"
         >
-          📊
+          Data
         </Box>
-        <IconButton>
-          <SettingsIcon color="action" />
-        </IconButton>
+
         <Box flexGrow={1} />
-        <IconButton onClick={onLogout}>
+
+        {/* Logout Button */}
+        <IconButton onClick={onLogout} aria-label="Logout">
           <LogoutIcon color="error" />
         </IconButton>
       </Box>
@@ -74,6 +68,7 @@ export function MinimalistDashboard({
       {/* Main Content */}
       <Box flex={1} p={6}>
         <Box maxWidth="1200px" mx="auto">
+          {/* Header */}
           <Box textAlign="center" mb={4}>
             <Typography variant="h4" fontWeight={300}>
               Graph Studio
@@ -81,7 +76,7 @@ export function MinimalistDashboard({
             <Typography
               variant="body1"
               color="text.secondary"
-              maxWidth="600px"
+              maxWidth={600}
               mx="auto"
             >
               Create and manipulate data points with precision. Click to add,
@@ -95,7 +90,7 @@ export function MinimalistDashboard({
             onPointHover={setHoveredPointId}
           />
 
-          {/* Data Table */}
+          {/* Points Data Table */}
           <Box mt={6}>
             <PointsTable
               hoveredPointId={hoveredPointId}
