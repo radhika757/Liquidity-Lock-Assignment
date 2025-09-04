@@ -78,6 +78,31 @@ export function D3Chart({
       .attr("font-size", 14)
       .text("Y");
 
+    // Create tooltip if it doesn't exist
+    let tooltip: d3.Selection<HTMLDivElement, unknown, HTMLElement, unknown> =
+      d3.select<HTMLDivElement, unknown>("body #tooltip");
+
+    // If it doesn't exist, create it
+    if (tooltip.empty()) {
+      tooltip = d3
+        .select("body")
+        .append("div")
+        .attr("id", "tooltip")
+        .style("position", "absolute")
+        .style("background", "rgba(0,0,0,0.7)")
+        .style("color", "#fff")
+        .style("padding", "4px 8px")
+        .style("border-radius", "4px")
+        .style("pointer-events", "none")
+        .style("font-size", "12px")
+        .style("display", "none") as unknown as d3.Selection<
+        HTMLDivElement,
+        unknown,
+        HTMLElement,
+        unknown
+      >;
+    }
+
     // Bind data to circles
     const circles = svg
       .selectAll<SVGCircleElement, Point>("circle")
@@ -93,10 +118,19 @@ export function D3Chart({
       .attr("r", 8)
       .attr("fill", "steelblue")
       .on("mouseover", (event, d) => {
-        onPointHover(d.id); // highlight row
+        onPointHover(d.id);
+        tooltip
+          .style("display", "block")
+          .html(`x: ${d.x.toFixed(2)}, y: ${d.y.toFixed(2)}`);
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("top", event.pageY + 10 + "px")
+          .style("left", event.pageX + 10 + "px");
       })
       .on("mouseout", () => {
         onPointHover(null); // remove highlight
+        tooltip.style("display", "none");
       })
       .call(
         d3.drag<SVGCircleElement, Point>().on("drag", (event, d) => {
@@ -107,7 +141,6 @@ export function D3Chart({
         })
       );
 
-    // ENTER + UPDATE: update position and fill based on hoveredPointId
     enter
       .merge(circles)
       .attr("cx", (d) => xScale(d.x))
@@ -135,7 +168,7 @@ export function D3Chart({
 
       dispatch(addPoint(newPointObj));
     });
-  }, [points, hoveredPointId, dispatch]);
+  }, [points, hoveredPointId, dispatch, onPointHover]);
 
   return (
     <div style={{ width: "100%", height: "650px" }}>
