@@ -1,78 +1,70 @@
+// src/components/D3Chart.tsx
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
+import { useSelector, useDispatch } from "react-redux";
 
-interface Point {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-}
+import type { AppDispatch, RootState } from "../store";
+import { addPoint, updatePoint } from "../store/pointsSlice";
 
-interface D3ChartProps {
-  points: Point[];
-  setPoints: (points: Point[]) => void;
-  hoveredPointId: string | null;
-  onPointHover: (id: string | null) => void;
-}
-
-export function D3Chart({ points, setPoints, hoveredPointId, onPointHover }: D3ChartProps) {
+export function D3Chart() {
+  const points = useSelector((state: RootState) => state.points.points);
+  const dispatch = useDispatch<AppDispatch>();
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove();
+    svg.selectAll("*").remove(); // Clear previous renders
 
     const width = 800;
-    const height = 500;
-    const margin = { top: 20, right: 20, bottom: 50, left: 60 };
+    const height = 600;
+    const margin = { top: 20, right: 40, bottom: 40, left: 50 };
 
     svg.attr("width", width).attr("height", height);
 
-    // Define data domain for better scaling
-    const xDomain = [0, 100];
-    const yDomain = [0, 100];
+    // Dynamic scale domains
+    const xMax = Math.max(500, d3.max(points, (d) => d.x) ?? 500);
+    const yMax = Math.max(500, d3.max(points, (d) => d.y) ?? 500);
 
-    // Scales
-    const xScale = d3.scaleLinear().domain(xDomain).range([margin.left, width - margin.right]);
-    const yScale = d3.scaleLinear().domain(yDomain).range([height - margin.bottom, margin.top]);
+    const xScale = d3
+      .scaleLinear()
+      .domain([0, xMax])
+      .range([margin.left, width - margin.right]);
+
+    const yScale = d3
+      .scaleLinear()
+      .domain([0, yMax])
+      .range([height - margin.bottom, margin.top]); // invert y-axis
 
     // X Axis
-    const xAxis = d3.axisBottom(xScale).ticks(10);
     svg
       .append("g")
-      .attr("transform", `translate(0, ${height - margin.bottom})`)
-      .call(xAxis);
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(xScale).ticks(10));
 
-    // X Axis Label
     svg
       .append("text")
-      .attr("x", width / 2)
-      .attr("y", height - 10)
-      .attr("text-anchor", "middle")
-      .attr("fill", "black")
-      .style("font-size", "14px")
+      .attr("x", width - margin.right)
+      .attr("y", height - 5)
+      .attr("text-anchor", "end")
+      .attr("font-size", 14)
       .text("X");
 
     // Y Axis
-    const yAxis = d3.axisLeft(yScale).ticks(10);
     svg
       .append("g")
-      .attr("transform", `translate(${margin.left}, 0)`)
-      .call(yAxis);
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(yScale).ticks(10));
 
-    // Y Axis Label
     svg
       .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -height / 2)
-      .attr("y", 20)
-      .attr("text-anchor", "middle")
-      .attr("fill", "black")
-      .style("font-size", "14px")
+      .attr("x", 5)
+      .attr("y", margin.top)
+      .attr("text-anchor", "start")
+      .attr("font-size", 14)
       .text("Y");
 
-    // Add circles
+    // Draw points
     svg
       .selectAll("circle")
       .data(points)
@@ -81,32 +73,33 @@ export function D3Chart({ points, setPoints, hoveredPointId, onPointHover }: D3C
       .attr("cx", (d) => xScale(d.x))
       .attr("cy", (d) => yScale(d.y))
       .attr("r", 8)
-      .attr("fill", (d) => (d.id === hoveredPointId ? "tomato" : "steelblue"))
+      .attr("fill", "steelblue")
       .call(
         d3
-          .drag<SVGCircleElement, Point>()
+          .drag<SVGCircleElement, any>()
           .on("drag", (event, d) => {
             const newX = xScale.invert(event.x);
             const newY = yScale.invert(event.y);
-            const updated = points.map((p) => (p.id === d.id ? { ...p, x: newX, y: newY } : p));
-            setPoints(updated);
+            dispatch(updatePoint({ ...d, x: newX, y: newY }));
           })
-      )
-      .on("mouseover", (_, d) => onPointHover(d.id))
-      .on("mouseout", () => onPointHover(null));
+      );
 
     // Double-click to add new points
     svg.on("dblclick", (event) => {
       const [mouseX, mouseY] = d3.pointer(event);
-      const newPoint: Point = {
+      const newPointObj = {
         id: Date.now().toString(),
         name: `Point ${points.length + 1}`,
         x: xScale.invert(mouseX),
         y: yScale.invert(mouseY),
       };
-      setPoints([...points, newPoint]);
+      dispatch(addPoint(newPointObj));
     });
-  }, [points, hoveredPointId]);
+  }, [points, dispatch]);
 
-  return <svg ref={svgRef}></svg>;
+  return (
+    <div style={{ width: "100%", height: "650px" }}>
+      <svg ref={svgRef} style={{ overflow: "visible" }} />
+    </div>
+  );
 }

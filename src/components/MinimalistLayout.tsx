@@ -28,7 +28,8 @@ interface MinimalistDashboardProps {
 }
 
 export function MinimalistDashboard({
-  points,
+  editingPoint,
+  setEditingPoint,
   setPoints,
   hoveredPointId,
   setHoveredPointId,
@@ -84,7 +85,6 @@ export function MinimalistDashboard({
 
           {/* D3 Chart */}
           <D3Chart
-            points={points}
             setPoints={setPoints}
             hoveredPointId={hoveredPointId}
             onPointHover={setHoveredPointId}
@@ -93,7 +93,6 @@ export function MinimalistDashboard({
           {/* Data Table */}
           <Box mt={6}>
             <PointsTable
-              points={points}
               setPoints={setPoints}
               hoveredPointId={hoveredPointId}
               onPointHover={setHoveredPointId}
@@ -102,6 +101,8 @@ export function MinimalistDashboard({
               setAddDialogOpen={setAddDialogOpen}
               newPoint={newPoint}
               setNewPoint={setNewPoint}
+              editingPoint={editingPoint}
+              setEditingPoint={setEditingPoint}
             />
           </Box>
         </Box>

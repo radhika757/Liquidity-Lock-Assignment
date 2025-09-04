@@ -8,8 +8,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
+import type { AppDispatch, RootState } from "../store";
+import { addPoint, clearPoints, updatePoint } from "../store/pointsSlice";
 
 interface Point {
   id: string;
@@ -19,7 +22,8 @@ interface Point {
 }
 
 interface PointsTableProps {
-  points: Point[];
+  editingPoint: Point | null;
+  setEditingPoint: (point: Point | null) => void;
   setPoints: (points: Point[]) => void;
   hoveredPointId: string | null;
   onPointHover: (id: string | null) => void;
@@ -31,16 +35,18 @@ interface PointsTableProps {
 }
 
 export function PointsTable({
-  points,
+  editingPoint,
+  setEditingPoint,
   setPoints,
   hoveredPointId,
   onPointHover,
-  handleAddPoint,
   addDialogOpen,
   setAddDialogOpen,
   setNewPoint,
   newPoint,
 }: PointsTableProps) {
+  const points = useSelector((state: RootState) => state.points.points);
+  const dispatch = useDispatch<AppDispatch>();
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 100, editable: false },
     { field: "name", headerName: "Name", width: 200, editable: true },
@@ -98,6 +104,26 @@ export function PointsTable({
     },
   ];
 
+  const handleOpenAddDialog = (point?: Point) => {
+    if (point) {
+      setEditingPoint(point);
+      setNewPoint({ name: point.name, x: point.x, y: point.y });
+    } else {
+      setEditingPoint(null);
+      setNewPoint({ name: "", x: 0, y: 0 });
+    }
+    setAddDialogOpen(true);
+  };
+
+  const handleSavePoint = () => {
+    if (editingPoint) {
+      dispatch(updatePoint({ id: editingPoint.id, ...newPoint }));
+    } else {
+      dispatch(addPoint(newPoint));
+    }
+    setAddDialogOpen(false);
+  };
+
   return (
     <div style={{ height: 400, width: 800 }}>
       <Box className="w-full">
@@ -111,18 +137,13 @@ export function PointsTable({
           <Typography variant="h6">Data Points</Typography>
 
           <Box display="flex" gap={1}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setAddDialogOpen(true)}
-            >
+            <Button variant="contained" onClick={() => handleOpenAddDialog()}>
               + Add Point
             </Button>
-
             <Button
               variant="outlined"
               color="error"
-              onClick={() => setPoints([])}
+              onClick={() => dispatch(clearPoints())}
             >
               Clear All
             </Button>
@@ -147,112 +168,52 @@ export function PointsTable({
               backgroundColor: "rgba(0,0,0,0.04)",
             },
             ...(hoveredPointId && {
-              [`& .MuiDataGrid-row[data-id="${hoveredPointId}"]`]: {
-                backgroundColor: "rgba(34,197,94,0.2)", // light green highlight
-              },
+              [`& .MuiDataGrid-row[data-id="${hoveredPointId}"]:hover, & .MuiDataGrid-row[data-id="${hoveredPointId}"]`]:
+                {
+                  backgroundColor: "rgba(34,197,94,0.2)", 
+                },
             }),
           }}
         />
       </Box>
 
-      <Dialog
-        open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            backgroundColor: "var(--card)",
-            border: "1px solid var(--border)",
-          },
-        }}
-      >
-        <DialogTitle sx={{ color: "var(--card-foreground)" }}>
-          Add New Point
+      <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)}>
+        <DialogTitle>
+          {editingPoint ? "Edit Point" : "Add New Point"}
         </DialogTitle>
         <DialogContent>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              pt: 1,
-              minWidth: 300,
-            }}
-          >
-            <TextField
-              label="Name (optional)"
-              value={newPoint.name}
-              onChange={(e) =>
-                setNewPoint((prev) => ({ ...prev, name: e.target.value }))
-              }
-              placeholder="Leave empty for random name"
-              fullWidth
-              sx={{
-                "& .MuiInputBase-root": {
-                  backgroundColor: "var(--input)",
-                  color: "var(--card-foreground)",
-                },
-                "& .MuiInputLabel-root": {
-                  color: "var(--muted-foreground)",
-                },
-              }}
-            />
-            <TextField
-              label="X Coordinate"
-              type="number"
-              inputProps={{ step: 0.01, min: -10, max: 10 }}
-              value={newPoint.x}
-              onChange={(e) =>
-                setNewPoint((prev) => ({ ...prev, x: Number(e.target.value) }))
-              }
-              fullWidth
-              sx={{
-                "& .MuiInputBase-root": {
-                  backgroundColor: "var(--input)",
-                  color: "var(--card-foreground)",
-                },
-                "& .MuiInputLabel-root": {
-                  color: "var(--muted-foreground)",
-                },
-              }}
-            />
-            <TextField
-              label="Y Coordinate"
-              type="number"
-              inputProps={{ step: 0.01, min: -10, max: 10 }}
-              value={newPoint.y}
-              onChange={(e) =>
-                setNewPoint((prev) => ({ ...prev, y: Number(e.target.value) }))
-              }
-              fullWidth
-              sx={{
-                "& .MuiInputBase-root": {
-                  backgroundColor: "var(--input)",
-                  color: "var(--card-foreground)",
-                },
-                "& .MuiInputLabel-root": {
-                  color: "var(--muted-foreground)",
-                },
-              }}
-            />
-          </Box>
+          <TextField
+            label="Name"
+            value={newPoint.name}
+            onChange={(e) => setNewPoint({ ...newPoint, name: e.target.value })}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="X"
+            type="number"
+            value={newPoint.x}
+            onChange={(e) =>
+              setNewPoint({ ...newPoint, x: Number(e.target.value) })
+            }
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Y"
+            type="number"
+            value={newPoint.y}
+            onChange={(e) =>
+              setNewPoint({ ...newPoint, y: Number(e.target.value) })
+            }
+            fullWidth
+            margin="normal"
+          />
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => setAddDialogOpen(false)}
-            sx={{ color: "var(--muted-foreground)" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAddPoint}
-            variant="contained"
-            sx={{
-              backgroundColor: "var(--primary)",
-              color: "var(--primary-foreground)",
-              "&:hover": { backgroundColor: "var(--primary)/90" },
-            }}
-          >
-            Add Point
+          <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleSavePoint}>
+            {editingPoint ? "Save" : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
