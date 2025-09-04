@@ -14,7 +14,6 @@ export function D3Chart() {
   useEffect(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove(); // Clear previous renders
 
     const width = 800;
     const height = 600;
@@ -34,59 +33,80 @@ export function D3Chart() {
     const yScale = d3
       .scaleLinear()
       .domain([0, yMax])
-      .range([height - margin.bottom, margin.top]); // invert y-axis
+      .range([height - margin.bottom, margin.top]);
+
+    // Remove old axes
+    svg.selectAll(".axis").remove();
 
     // X Axis
     svg
       .append("g")
+      .attr("class", "axis x-axis")
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(xScale).ticks(10));
 
+    // Y Axis
+    svg
+      .append("g")
+      .attr("class", "axis y-axis")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(yScale).ticks(10));
+
+    // Axis labels
+    svg.selectAll(".axis-label").remove();
     svg
       .append("text")
+      .attr("class", "axis-label")
       .attr("x", width - margin.right)
       .attr("y", height - 5)
       .attr("text-anchor", "end")
       .attr("font-size", 14)
       .text("X");
 
-    // Y Axis
-    svg
-      .append("g")
-      .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale).ticks(10));
-
     svg
       .append("text")
+      .attr("class", "axis-label")
       .attr("x", 5)
       .attr("y", margin.top)
       .attr("text-anchor", "start")
       .attr("font-size", 14)
       .text("Y");
 
-    // Draw points
-    svg
-      .selectAll("circle")
-      .data(points)
+    // -------------------------------
+    // ENTER - UPDATE - EXIT for points
+    // -------------------------------
+    const circles = svg
+      .selectAll<SVGCircleElement, any>("circle")
+      .data(points, (d: any) => d.id);
+
+    // EXIT
+    circles.exit().remove();
+
+    // ENTER
+    const enter = circles
       .enter()
       .append("circle")
-      .attr("cx", (d) => xScale(d.x))
-      .attr("cy", (d) => yScale(d.y))
       .attr("r", 8)
       .attr("fill", "steelblue")
       .call(
         d3.drag<SVGCircleElement, any>().on("drag", (event, d) => {
-          const newX = xScale.invert(event.x);
-          const newY = yScale.invert(event.y);
+          const [mouseX, mouseY] = d3.pointer(event, svg.node());
+          const newX = xScale.invert(mouseX);
+          const newY = yScale.invert(mouseY);
           dispatch(updatePoint({ ...d, x: newX, y: newY }));
         })
       );
+
+    // ENTER + UPDATE
+    enter
+      .merge(circles)
+      .attr("cx", (d) => xScale(d.x))
+      .attr("cy", (d) => yScale(d.y));
 
     // Double-click to add new points
     svg.on("dblclick", (event) => {
       const [mouseX, mouseY] = d3.pointer(event);
 
-      // Get the max existing ID and add 1
       const maxId =
         points.length > 0 ? Math.max(...points.map((p) => Number(p.id))) : 0;
       const id = (maxId + 1).toString();
