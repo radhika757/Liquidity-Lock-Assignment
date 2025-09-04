@@ -1,8 +1,14 @@
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { Button, Card, CardContent, CardHeader, Typography, Input, FormLabel } from "@mui/material"
-
-
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  TextField,
+  Box,
+} from "@mui/material"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -22,49 +28,56 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="bg-card border-border">
+    <Card
+      sx={{
+        maxWidth: 500,
+        margin: "auto",
+        mt: 8,
+        boxShadow: 3,
+        borderRadius: 2,
+      }}
+    >
       <CardHeader
-        title={<Typography variant="h5">Login</Typography>}
-        subheader={<Typography variant="body2">Enter your credentials</Typography>}
+        title={<Typography variant="h5">Welcome back</Typography>}
+        subheader={
+          <Typography variant="body2">
+            Enter your credentials to access the dashboard
+          </Typography>
+        }
       />
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <FormLabel htmlFor="email" className="text-card-foreground">
-              Email
-            </FormLabel>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-input border-border text-foreground"
-            />
-          </div>
-          <div className="space-y-2">
-            <FormLabel htmlFor="password" className="text-card-foreground">
-              Password
-            </FormLabel>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-input border-border text-foreground"
-            />
-          </div>
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            margin="normal"
+            fullWidth
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <TextField
+            margin="normal"
+            fullWidth
+            id="password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
           <Button
             type="submit"
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            fullWidth
+            variant="contained"
+            color="primary"
             disabled={isLoading}
+            sx={{ mt: 2 }}
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
-        </form>
+        </Box>
       </CardContent>
     </Card>
   )
