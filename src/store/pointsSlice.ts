@@ -39,7 +39,7 @@ const pointsSlice = createSlice({
       );
     },
     deletePoint: (state, action: PayloadAction<string>) => {
-      state.points = state.points.filter((p) => p.id !== action.payload);
+      state.points = state.points.filter(p => p.id !== action.payload);
     },
     clearPoints: (state) => {
       state.points = [];

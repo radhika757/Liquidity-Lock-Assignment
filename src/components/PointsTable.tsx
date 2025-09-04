@@ -12,7 +12,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
 import type { AppDispatch, RootState } from "../store";
-import { addPoint, clearPoints, updatePoint } from "../store/pointsSlice";
+import { addPoint, clearPoints, deletePoint, updatePoint } from "../store/pointsSlice";
 
 interface Point {
   id: string;
@@ -92,8 +92,7 @@ export function PointsTable({
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              const updatedPoints = points.filter((p) => p.id !== params.id);
-              setPoints(updatedPoints);
+              dispatch(deletePoint(params.id.toString())); 
               if (hoveredPointId === params.id) onPointHover(null);
             }}
           >
@@ -157,10 +156,14 @@ export function PointsTable({
           getRowId={(row) => row.id}
           onRowClick={(params) => onPointHover(params.id.toString())}
           processRowUpdate={(newRow) => {
-            const updated = points.map((p) =>
-              p.id === newRow.id ? { ...newRow } : p
+            dispatch(
+              updatePoint({
+                id: newRow.id,
+                x: newRow.x,
+                y: newRow.y,
+                name: newRow.name,
+              })
             );
-            setPoints(updated);
             return newRow;
           }}
           sx={{
@@ -170,7 +173,7 @@ export function PointsTable({
             ...(hoveredPointId && {
               [`& .MuiDataGrid-row[data-id="${hoveredPointId}"]:hover, & .MuiDataGrid-row[data-id="${hoveredPointId}"]`]:
                 {
-                  backgroundColor: "rgba(34,197,94,0.2)", 
+                  backgroundColor: "rgba(34,197,94,0.2)",
                 },
             }),
           }}
