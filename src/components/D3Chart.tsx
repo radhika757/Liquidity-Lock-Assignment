@@ -106,7 +106,7 @@ export function D3Chart({ hoveredPointId, onPointHover }: D3ChartProps) {
       .append("circle")
       .attr("r", 8)
       .attr("fill", "steelblue")
-      .on("mouseover", (event, d) => {
+      .on("mouseover", (d) => {
         onPointHover(d.id);
         tooltip
           .style("display", "block")
