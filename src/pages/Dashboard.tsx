@@ -3,6 +3,9 @@ import { useDispatch } from "react-redux";
 import { MinimalistDashboard } from "../components/MinimalistLayout";
 import { addPoint, updatePoint } from "../store/pointsSlice";
 import type { AppDispatch } from "../store";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 // import { DarkModeDashboard } from "../components/layouts/dark-mode-dashboard"
 // import { CardBasedDashboard } from "../components/layouts/card-based-dashboard"
@@ -21,22 +24,19 @@ export function Dashboard() {
   const [points, setPoints] = useState<Point[]>([
     { id: "1", name: "Point 1", x: 100, y: 100 },
   ]);
-  const [nextId, setNextId] = useState(1);
+  const [nextId, setNextId] = useState(2);
   const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
   const [selectedLayout, setSelectedLayout] = useState<string>("minimalist");
 
-  // Temporary state for adding a new point (from dialog/form)
-  const [newPoint, setNewPoint] = useState<{
-    name: string;
-    x: number;
-    y: number;
-  }>({
+  const [newPoint, setNewPoint] = useState<{ name: string; x: number; y: number }>({
     name: "",
     x: 0,
     y: 0,
   });
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingPoint, setEditingPoint] = useState<Point | null>(null);
+
+  const navigate = useNavigate(); // <-- hook inside component
 
   const handleAddPoint = () => {
     if (editingPoint) {
@@ -55,6 +55,16 @@ export function Dashboard() {
     setAddDialogOpen(false);
     setNewPoint({ name: "", x: 0, y: 0 });
     setEditingPoint(null);
+  };
+
+  // Correct logout handler
+  const onLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login"); // redirect to login
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const layouts = {
@@ -83,6 +93,8 @@ export function Dashboard() {
       setAddDialogOpen={setAddDialogOpen}
       editingPoint={editingPoint}
       setEditingPoint={setEditingPoint}
+      onLogout={onLogout} 
     />
   );
 }
+
