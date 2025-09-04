@@ -93,7 +93,6 @@ export function MinimalistDashboard({
           {/* Data Table */}
           <Box mt={6}>
             <PointsTable
-              setPoints={setPoints}
               hoveredPointId={hoveredPointId}
               onPointHover={setHoveredPointId}
               handleAddPoint={handleAddPoint}

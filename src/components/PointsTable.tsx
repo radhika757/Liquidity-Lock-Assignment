@@ -12,7 +12,12 @@ import { useSelector, useDispatch } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
 import type { AppDispatch, RootState } from "../store";
-import { addPoint, clearPoints, deletePoint, updatePoint } from "../store/pointsSlice";
+import {
+  addPoint,
+  clearPoints,
+  deletePoint,
+  updatePoint,
+} from "../store/pointsSlice";
 
 interface Point {
   id: string;
@@ -24,7 +29,6 @@ interface Point {
 interface PointsTableProps {
   editingPoint: Point | null;
   setEditingPoint: (point: Point | null) => void;
-  setPoints: (points: Point[]) => void;
   hoveredPointId: string | null;
   onPointHover: (id: string | null) => void;
   handleAddPoint: () => void;
@@ -37,7 +41,6 @@ interface PointsTableProps {
 export function PointsTable({
   editingPoint,
   setEditingPoint,
-  setPoints,
   hoveredPointId,
   onPointHover,
   addDialogOpen,
@@ -92,7 +95,7 @@ export function PointsTable({
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              dispatch(deletePoint(params.id.toString())); 
+              dispatch(deletePoint(params.id.toString()));
               if (hoveredPointId === params.id) onPointHover(null);
             }}
           >
@@ -102,6 +105,21 @@ export function PointsTable({
       ),
     },
   ];
+
+  const getNextPointName = (points: Point[]) => {
+    const existingNumbers = points
+      .map((p) => {
+        const match = p.name.match(/Point (\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+      .filter((n) => n > 0);
+
+    let nextNumber = 1;
+    while (existingNumbers.includes(nextNumber)) {
+      nextNumber++;
+    }
+    return `Point ${nextNumber}`;
+  };
 
   const handleOpenAddDialog = (point?: Point) => {
     if (point) {
@@ -118,7 +136,14 @@ export function PointsTable({
     if (editingPoint) {
       dispatch(updatePoint({ id: editingPoint.id, ...newPoint }));
     } else {
-      dispatch(addPoint(newPoint));
+      const name = newPoint.name || getNextPointName(points);
+
+      // Compute the next ID
+      const maxId =
+        points.length > 0 ? Math.max(...points.map((p) => Number(p.id))) : 0;
+      const id = (maxId + 1).toString();
+
+      dispatch(addPoint({ id, name, x: newPoint.x, y: newPoint.y }));
     }
     setAddDialogOpen(false);
   };

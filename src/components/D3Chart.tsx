@@ -75,24 +75,31 @@ export function D3Chart() {
       .attr("r", 8)
       .attr("fill", "steelblue")
       .call(
-        d3
-          .drag<SVGCircleElement, any>()
-          .on("drag", (event, d) => {
-            const newX = xScale.invert(event.x);
-            const newY = yScale.invert(event.y);
-            dispatch(updatePoint({ ...d, x: newX, y: newY }));
-          })
+        d3.drag<SVGCircleElement, any>().on("drag", (event, d) => {
+          const newX = xScale.invert(event.x);
+          const newY = yScale.invert(event.y);
+          dispatch(updatePoint({ ...d, x: newX, y: newY }));
+        })
       );
 
     // Double-click to add new points
     svg.on("dblclick", (event) => {
       const [mouseX, mouseY] = d3.pointer(event);
+
+      // Get the max existing ID and add 1
+      const maxId =
+        points.length > 0 ? Math.max(...points.map((p) => Number(p.id))) : 0;
+      const id = (maxId + 1).toString();
+
+      const name = `Point ${points.length + 1}`;
+
       const newPointObj = {
-        id: Date.now().toString(),
-        name: `Point ${points.length + 1}`,
+        id,
+        name,
         x: xScale.invert(mouseX),
         y: yScale.invert(mouseY),
       };
+
       dispatch(addPoint(newPointObj));
     });
   }, [points, dispatch]);
