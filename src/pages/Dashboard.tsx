@@ -1,23 +1,11 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { MinimalistDashboard } from "../components/MinimalistLayout";
-import { addPoint, updatePoint } from "../store/pointsSlice";
+import { addPoint, updatePoint, type Point } from "../store/pointsSlice";
 import type { AppDispatch } from "../store";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
-
-// import { DarkModeDashboard } from "../components/layouts/dark-mode-dashboard"
-// import { CardBasedDashboard } from "../components/layouts/card-based-dashboard"
-// import { SplitViewDashboard } from "../components/layouts/split-view-dashboard"
-// import { SidePanelDashboard } from "../components/layouts/side-panel-dashboard"
-
-export interface Point {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-}
 
 export function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
@@ -36,7 +24,7 @@ export function Dashboard() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingPoint, setEditingPoint] = useState<Point | null>(null);
 
-  const navigate = useNavigate(); // <-- hook inside component
+  const navigate = useNavigate(); 
 
   const handleAddPoint = () => {
     if (editingPoint) {
@@ -57,7 +45,7 @@ export function Dashboard() {
     setEditingPoint(null);
   };
 
-  // Correct logout handler
+  // Logout handler
   const onLogout = async () => {
     try {
       await signOut(auth);
@@ -69,10 +57,6 @@ export function Dashboard() {
 
   const layouts = {
     minimalist: MinimalistDashboard,
-    // dark: DarkModeDashboard,
-    // card: CardBasedDashboard,
-    // split: SplitViewDashboard,
-    // panel: SidePanelDashboard,
   };
 
   const SelectedLayout =

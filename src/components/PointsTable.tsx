@@ -18,15 +18,10 @@ import {
   clearPoints,
   deletePoint,
   updatePoint,
+  type Point,
 } from "../store/pointsSlice";
 import { useState } from "react";
 
-interface Point {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-}
 
 interface PointsTableProps {
   editingPoint: Point | null;
@@ -51,9 +46,10 @@ export function PointsTable({
   newPoint,
 }: PointsTableProps) {
   const [exportSnackbarOpen, setExportSnackbarOpen] = useState(false);
-
   const points = useSelector((state: RootState) => state.points.points);
   const dispatch = useDispatch<AppDispatch>();
+
+  /** Columns for DataGrid */
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 100, editable: false },
     { field: "name", headerName: "Name", width: 200, editable: true },
@@ -74,7 +70,6 @@ export function PointsTable({
           alignItems="center"
           height="100%"
         >
-          {/* Edit button */}
           <Button
             variant="outlined"
             color="primary"
@@ -93,7 +88,6 @@ export function PointsTable({
             Edit
           </Button>
 
-          {/* Delete button */}
           <Button
             variant="outlined"
             color="error"
@@ -111,6 +105,7 @@ export function PointsTable({
     },
   ];
 
+  /** Generate next unique point name */
   const getNextPointName = (points: Point[]) => {
     const existingNumbers = points
       .map((p) => {
@@ -120,45 +115,43 @@ export function PointsTable({
       .filter((n) => n > 0);
 
     let nextNumber = 1;
-    while (existingNumbers.includes(nextNumber)) {
-      nextNumber++;
-    }
+    while (existingNumbers.includes(nextNumber)) nextNumber++;
     return `Point ${nextNumber}`;
   };
 
+  /** Export points to CSV */
   const exportToCSV = () => {
     if (!points || points.length === 0) return;
 
     const headers = ["ID", "Name", "X", "Y"];
     const rows = points.map((p) => [p.id, p.name, p.x, p.y]);
-
     const csvContent =
       "data:text/csv;charset=utf-8," +
       [headers, ...rows].map((e) => e.join(",")).join("\n");
 
-    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "points.csv");
+    link.href = encodeURI(csvContent);
+    link.download = "points.csv";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    // Show Snackbar
     setExportSnackbarOpen(true);
   };
 
+  /** Open Add/Edit dialog */
   const handleOpenAddDialog = (point?: Point) => {
     if (point) {
-      setEditingPoint(point); // mark as editing
+      setEditingPoint(point);
       setNewPoint({ name: point.name, x: point.x, y: point.y });
     } else {
-      setEditingPoint(null); // mark as adding new
+      setEditingPoint(null);
       setNewPoint({ name: "", x: 0, y: 0 });
     }
     setAddDialogOpen(true);
   };
 
+  /** Save or update a point */
   const handleSavePoint = () => {
     if (editingPoint) {
       dispatch(updatePoint({ id: editingPoint.id, ...newPoint }));
@@ -167,95 +160,62 @@ export function PointsTable({
       const maxId =
         points.length > 0 ? Math.max(...points.map((p) => Number(p.id))) : 0;
       const id = (maxId + 1).toString();
-
       dispatch(addPoint({ id, name, x: newPoint.x, y: newPoint.y }));
     }
-
-    setEditingPoint(null); // reset
+    setEditingPoint(null);
     setAddDialogOpen(false);
     setNewPoint({ name: "", x: 0, y: 0 });
   };
 
   return (
-    <div style={{ height: 400, width: 800 }}>
-      <Box className="w-full">
-        {/* Header */}
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={2}
-        >
-          <Typography variant="h6">Data Points</Typography>
-
-          <Box display="flex" gap={1}>
-            <Button variant="contained" onClick={() => handleOpenAddDialog()}>
-              + Add Point
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={() => dispatch(clearPoints())}
-            >
-              Clear All
-            </Button>
-            <Button variant="outlined" color="secondary" onClick={exportToCSV}>
-              Export CSV
-            </Button>
-          </Box>
+    <Box width="800px" height="400px">
+      {/* Header */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h6">Data Points</Typography>
+        <Box display="flex" gap={1}>
+          <Button variant="contained" onClick={() => handleOpenAddDialog()}>
+            + Add Point
+          </Button>
+          <Button variant="outlined" color="error" onClick={() => dispatch(clearPoints())}>
+            Clear All
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={exportToCSV}>
+            Export CSV
+          </Button>
         </Box>
-
-        {/* DataGrid */}
-        <div
-          style={{ height: 400, width: 800 }}
-          onMouseMove={(e) => {
-            const row = (e.target as HTMLElement).closest(
-              ".MuiDataGrid-row"
-            ) as HTMLElement | null;
-            const id = row?.dataset.id ?? null;
-            if (id !== hoveredPointId) {
-              onPointHover(id);
-            }
-          }}
-          onMouseLeave={() => {
-            onPointHover(null);
-          }}
-        >
-          <DataGrid
-            rows={points}
-            columns={columns}
-            getRowId={(row) => row.id}
-            processRowUpdate={(newRow) => {
-              dispatch(
-                updatePoint({
-                  id: newRow.id,
-                  x: newRow.x,
-                  y: newRow.y,
-                  name: newRow.name,
-                })
-              );
-              return newRow;
-            }}
-            getRowClassName={(params) =>
-              params.id === hoveredPointId ? "hovered-row" : ""
-            }
-            onRowClick={(params) => onPointHover(params.id.toString())}
-            sx={{
-              "& .MuiDataGrid-row:hover": {
-                backgroundColor: "rgba(0,0,0,0.04)",
-              },
-              "& .hovered-row": {
-                backgroundColor: "rgba(34,197,94,0.2) !important",
-              },
-            }}
-          />
-        </div>
       </Box>
 
+      {/* DataGrid */}
+      <Box
+        width="100%"
+        height="100%"
+        onMouseMove={(e) => {
+          const row = (e.target as HTMLElement).closest(".MuiDataGrid-row") as HTMLElement | null;
+          const id = row?.dataset.id ?? null;
+          if (id !== hoveredPointId) onPointHover(id);
+        }}
+        onMouseLeave={() => onPointHover(null)}
+      >
+        <DataGrid
+          rows={points}
+          columns={columns}
+          getRowId={(row) => row.id}
+          processRowUpdate={(newRow) => {
+            dispatch(updatePoint({ id: newRow.id, x: newRow.x, y: newRow.y, name: newRow.name }));
+            return newRow;
+          }}
+          getRowClassName={(params) => (params.id === hoveredPointId ? "hovered-row" : "")}
+          onRowClick={(params) => onPointHover(params.id.toString())}
+          sx={{
+            "& .MuiDataGrid-row:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+            "& .hovered-row": { backgroundColor: "rgba(34,197,94,0.2) !important" },
+          }}
+        />
+      </Box>
+
+      {/* Add/Edit Dialog */}
       <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)}>
-        <DialogTitle>
-          {editingPoint ? "Edit Point" : "Add New Point"}
-        </DialogTitle>
+        <DialogTitle>{editingPoint ? "Edit Point" : "Add New Point"}</DialogTitle>
         <DialogContent>
           <TextField
             label="Name"
@@ -268,9 +228,7 @@ export function PointsTable({
             label="X"
             type="number"
             value={newPoint.x}
-            onChange={(e) =>
-              setNewPoint({ ...newPoint, x: Number(e.target.value) })
-            }
+            onChange={(e) => setNewPoint({ ...newPoint, x: Number(e.target.value) })}
             fullWidth
             margin="normal"
           />
@@ -278,9 +236,7 @@ export function PointsTable({
             label="Y"
             type="number"
             value={newPoint.y}
-            onChange={(e) =>
-              setNewPoint({ ...newPoint, y: Number(e.target.value) })
-            }
+            onChange={(e) => setNewPoint({ ...newPoint, y: Number(e.target.value) })}
             fullWidth
             margin="normal"
           />
@@ -293,6 +249,7 @@ export function PointsTable({
         </DialogActions>
       </Dialog>
 
+      {/* Export Snackbar */}
       <Snackbar
         open={exportSnackbarOpen}
         autoHideDuration={3000}
@@ -300,6 +257,6 @@ export function PointsTable({
         message="Points exported successfully!"
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       />
-    </div>
+    </Box>
   );
 }

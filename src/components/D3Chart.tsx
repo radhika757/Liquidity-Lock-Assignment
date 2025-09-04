@@ -1,18 +1,15 @@
-// src/components/D3Chart.tsx
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { useSelector, useDispatch } from "react-redux";
-
 import type { AppDispatch, RootState } from "../store";
 import { addPoint, updatePoint, type Point } from "../store/pointsSlice";
 
-export function D3Chart({
-  hoveredPointId,
-  onPointHover,
-}: {
+interface D3ChartProps {
   hoveredPointId: string | null;
   onPointHover: (id: string | null) => void;
-}) {
+}
+
+export function D3Chart({ hoveredPointId, onPointHover }: D3ChartProps) {
   const points = useSelector((state: RootState) => state.points.points);
   const dispatch = useDispatch<AppDispatch>();
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -21,13 +18,14 @@ export function D3Chart({
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
 
+    /** Chart dimensions */
     const width = 800;
     const height = 600;
     const margin = { top: 20, right: 40, bottom: 40, left: 50 };
 
     svg.attr("width", width).attr("height", height);
 
-    // Dynamic scale domains
+    /** Scales */
     const xMax = Math.max(500, d3.max(points, (d) => d.x) ?? 500);
     const yMax = Math.max(500, d3.max(points, (d) => d.y) ?? 500);
 
@@ -35,30 +33,29 @@ export function D3Chart({
       .scaleLinear()
       .domain([0, xMax])
       .range([margin.left, width - margin.right]);
-
     const yScale = d3
       .scaleLinear()
       .domain([0, yMax])
       .range([height - margin.bottom, margin.top]);
 
-    // Remove old axes
+    /** Remove old axes */
     svg.selectAll(".axis").remove();
 
-    // X Axis
+    /** X Axis */
     svg
       .append("g")
       .attr("class", "axis x-axis")
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(xScale).ticks(10));
 
-    // Y Axis
+    /** Y Axis */
     svg
       .append("g")
       .attr("class", "axis y-axis")
       .attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(yScale).ticks(10));
 
-    // Axis labels
+    /** Axis labels */
     svg.selectAll(".axis-label").remove();
     svg
       .append("text")
@@ -78,11 +75,8 @@ export function D3Chart({
       .attr("font-size", 14)
       .text("Y");
 
-    // Create tooltip if it doesn't exist
-    let tooltip: d3.Selection<HTMLDivElement, unknown, HTMLElement, unknown> =
-      d3.select<HTMLDivElement, unknown>("body #tooltip");
-
-    // If it doesn't exist, create it
+    /** Tooltip setup */
+    let tooltip = d3.select<HTMLDivElement, unknown>("#tooltip");
     if (tooltip.empty()) {
       tooltip = d3
         .select("body")
@@ -95,18 +89,13 @@ export function D3Chart({
         .style("border-radius", "4px")
         .style("pointer-events", "none")
         .style("font-size", "12px")
-        .style("display", "none") as unknown as d3.Selection<
-        HTMLDivElement,
-        unknown,
-        HTMLElement,
-        unknown
-      >;
+        .style("display", "none");
     }
 
-    // Bind data to circles
+    /** Data binding for circles */
     const circles = svg
       .selectAll<SVGCircleElement, Point>("circle")
-      .data(points, (d: Point) => d.id);
+      .data(points, (d) => d.id);
 
     // EXIT
     circles.exit().remove();
@@ -129,18 +118,23 @@ export function D3Chart({
           .style("left", event.pageX + 10 + "px");
       })
       .on("mouseout", () => {
-        onPointHover(null); // remove highlight
+        onPointHover(null);
         tooltip.style("display", "none");
       })
       .call(
         d3.drag<SVGCircleElement, Point>().on("drag", (event, d) => {
           const [mouseX, mouseY] = d3.pointer(event, svg.node());
-          const newX = xScale.invert(mouseX);
-          const newY = yScale.invert(mouseY);
-          dispatch(updatePoint({ ...d, x: newX, y: newY }));
+          dispatch(
+            updatePoint({
+              ...d,
+              x: xScale.invert(mouseX),
+              y: yScale.invert(mouseY),
+            })
+          );
         })
       );
 
+    // ENTER + UPDATE
     enter
       .merge(circles)
       .attr("cx", (d) => xScale(d.x))
@@ -149,24 +143,22 @@ export function D3Chart({
         d.id === hoveredPointId ? "limegreen" : "steelblue"
       );
 
-    // Double-click to add new points
+    /** Double-click to add new points */
     svg.on("dblclick", (event) => {
       const [mouseX, mouseY] = d3.pointer(event);
-
       const maxId =
         points.length > 0 ? Math.max(...points.map((p) => Number(p.id))) : 0;
       const id = (maxId + 1).toString();
-
-      const name = `Point ${points.length + 1}`;
-
-      const newPointObj = {
+      const newPointObj: Point = {
         id,
-        name,
+        name: `Point ${points.length + 1}`,
         x: xScale.invert(mouseX),
         y: yScale.invert(mouseY),
       };
-
       dispatch(addPoint(newPointObj));
+
+      // Immediately set hover to new point
+      onPointHover(newPointObj.id);
     });
   }, [points, hoveredPointId, dispatch, onPointHover]);
 
