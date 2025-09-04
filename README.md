@@ -1,69 +1,30 @@
-# React + TypeScript + Vite
+# Interactive Graph App
+## Tech Stack
+React (UI framework) D3.js (charting, mandatory) Material UI (optional, for styling)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Features
+Graph (D3) - Standard X and Y axes. Add a point by double-clicking. Drag existing points to update coordinates. Click to add a point.
 
-Currently, two official plugins are available:
+## Table (below the graph) - 
+Lists all points with ID, X, and Y coordinates. Inline editing of table values. Edit via pop-up (no submit button required). Bi-directional sync Changes in the graph update the table. Changes in the table update the graph.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Hover interactions - 
+Hovering over a table row highlights the point on the graph (and vice versa).
 
-## Expanding the ESLint configuration
+## Requirements
+Modular, reusable, and clean code. Clear architecture with proper interfaces. Short demo video or hosted link. Clean README with easy setup instructions. Login page (using a 3rd party tool).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Additional section for highlighting enhancements.
+Ability to delete a particular point.
+Deployed the project - (add link).
+Option to Reset Graph with Clear All Button.
+Uno/Redo - Track changes to points so the user can undo the last action.
+Steps followed & commit Ids
+Step 1 - Project Setup (React, TypeScript, D3, Redux, MUI for table, Firebase, Tailwind setup).
+Step 2 - Basic App Layout & Auth (Creating Firebase, implementing useAuth(), routes /login and /dashboard),
+Step 3 - Chart MVP (rendering points, dragging points, hovering effects {tooltip showing names of points})
+Step 4 - Table MVP ( Render table using MUI, Inline cell edit, Edit with popup, delete row.)
+Step 5 - Setting up Bi-directional sync (verifying that drag and double-click are in sync with the table & vice versa).
+Step 6 - Keyboard activities, validations, hover effects (UI enhancements),
+Step 7 - Testing ( chart interaction test, unit test for add/move/delete) (Jest**, for UI use any).
+Step 8 - Vercel.
