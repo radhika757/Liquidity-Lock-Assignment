@@ -17,6 +17,7 @@ export function Dashboard() {
   const [points, setPoints] = useState<Point[]>([
     { id: "1", name: "Point 1", x: 100, y: 100 },
   ]);
+  const [nextId, setNextId] = useState(1);
   const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
   const [selectedLayout, setSelectedLayout] = useState<string>("minimalist");
 
@@ -42,13 +43,14 @@ export function Dashboard() {
 
   const handleAddPoint = () => {
     const pointToAdd: Point = {
-      id: `point-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: nextId.toString(),
       name: newPoint.name || generateRandomName(),
       x: newPoint.x,
       y: newPoint.y,
     };
     console.log("[v0] Adding point from table:", pointToAdd);
     setPoints([...points, pointToAdd]);
+    setNextId(nextId + 1);
     setAddDialogOpen(false);
     setNewPoint({ name: "", x: 0, y: 0 });
   };

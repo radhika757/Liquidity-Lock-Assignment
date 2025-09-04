@@ -46,10 +46,60 @@ export function PointsTable({
     { field: "name", headerName: "Name", width: 200, editable: true },
     { field: "x", headerName: "X", width: 120, editable: true, type: "number" },
     { field: "y", headerName: "Y", width: 120, editable: true, type: "number" },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 180,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Box
+          display="flex"
+          gap={1}
+          width="100%"
+          justifyContent="center"
+          alignItems="center"
+          height="100%"
+        >
+          {/* Edit button */}
+          <Button
+            variant="outlined"
+            color="primary"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              setNewPoint({
+                name: params.row.name,
+                x: params.row.x,
+                y: params.row.y,
+              });
+              setAddDialogOpen(true);
+            }}
+          >
+            Edit
+          </Button>
+
+          {/* Delete button */}
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              const updatedPoints = points.filter((p) => p.id !== params.id);
+              setPoints(updatedPoints);
+              if (hoveredPointId === params.id) onPointHover(null);
+            }}
+          >
+            Delete
+          </Button>
+        </Box>
+      ),
+    },
   ];
 
   return (
-    <div style={{ height: 400, width: "100%" }}>
+    <div style={{ height: 400, width: 800 }}>
       <Box className="w-full">
         {/* Header */}
         <Box
@@ -187,7 +237,10 @@ export function PointsTable({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddDialogOpen(false)} sx={{ color: "var(--muted-foreground)" }}>
+          <Button
+            onClick={() => setAddDialogOpen(false)}
+            sx={{ color: "var(--muted-foreground)" }}
+          >
             Cancel
           </Button>
           <Button
