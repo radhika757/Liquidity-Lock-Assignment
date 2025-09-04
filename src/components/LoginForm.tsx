@@ -9,23 +9,31 @@ import {
   TextField,
   Box,
 } from "@mui/material"
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("");
   const navigate = useNavigate()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+ const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    // Simulate authentication - in real app, this would call an API
-    setTimeout(() => {
-      localStorage.setItem("isAuthenticated", "true")
-      navigate("/dashboard")
-    }, 1000)
-  }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      localStorage.setItem("isAuthenticated", "true");
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Card
