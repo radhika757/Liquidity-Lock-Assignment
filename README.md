@@ -42,7 +42,7 @@ Follow these steps carefully. Don’t worry if you’re not a coder — just fol
 
 ### 2. Open Terminal / Command Prompt
 - Navigate to the folder where you extracted the project 
-- cd Desktop/interactive-graph-app
+- cd Desktop/Liquidity-Lock-Assignment-main
 
 ### 3. Install Dependencies 
 - Run the command - npm install
