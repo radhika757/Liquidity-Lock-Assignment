@@ -1,5 +1,4 @@
 import { Box, IconButton, Typography } from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { D3Chart } from "./D3Chart";
 import { PointsTable } from "./PointsTable";
@@ -62,9 +61,6 @@ export function MinimalistDashboard({
         >
           📊
         </Box>
-        <IconButton>
-          <SettingsIcon color="action" />
-        </IconButton>
         <Box flexGrow={1} />
         <IconButton onClick={onLogout}>
           <LogoutIcon color="error" />

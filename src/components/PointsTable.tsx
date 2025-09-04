@@ -5,6 +5,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
@@ -18,6 +19,7 @@ import {
   deletePoint,
   updatePoint,
 } from "../store/pointsSlice";
+import { useState } from "react";
 
 interface Point {
   id: string;
@@ -48,6 +50,8 @@ export function PointsTable({
   setNewPoint,
   newPoint,
 }: PointsTableProps) {
+  const [exportSnackbarOpen, setExportSnackbarOpen] = useState(false);
+
   const points = useSelector((state: RootState) => state.points.points);
   const dispatch = useDispatch<AppDispatch>();
   const columns: GridColDef[] = [
@@ -122,6 +126,28 @@ export function PointsTable({
     return `Point ${nextNumber}`;
   };
 
+  const exportToCSV = () => {
+    if (!points || points.length === 0) return;
+
+    const headers = ["ID", "Name", "X", "Y"];
+    const rows = points.map((p) => [p.id, p.name, p.x, p.y]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "points.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Show Snackbar
+    setExportSnackbarOpen(true);
+  };
+
   const handleOpenAddDialog = (point?: Point) => {
     if (point) {
       setEditingPoint(point); // mark as editing
@@ -172,6 +198,9 @@ export function PointsTable({
               onClick={() => dispatch(clearPoints())}
             >
               Clear All
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={exportToCSV}>
+              Export CSV
             </Button>
           </Box>
         </Box>
@@ -263,6 +292,14 @@ export function PointsTable({
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={exportSnackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setExportSnackbarOpen(false)}
+        message="Points exported successfully!"
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      />
     </div>
   );
 }
