@@ -19,7 +19,12 @@ interface MinimalistDashboardProps {
   setHoveredPointId: (id: string | null) => void
   onLogout?: () => void
   selectedLayout: string
-  setSelectedLayout: (layout: string) => void
+  setSelectedLayout: (layout: string) => void,
+  handleAddPoint: () => void,
+  newPoint: { name: string; x: number; y: number }
+  setNewPoint: (point: { name: string; x: number; y: number }) => void
+  addDialogOpen: boolean
+  setAddDialogOpen: (open: boolean) => void
 }
 
 export function MinimalistDashboard({
@@ -28,6 +33,11 @@ export function MinimalistDashboard({
   hoveredPointId,
   setHoveredPointId,
   onLogout,
+  handleAddPoint,
+  setAddDialogOpen,
+  addDialogOpen,
+  newPoint,
+  setNewPoint
 }: MinimalistDashboardProps) {
   return (
     <Box display="flex" minHeight="100vh">
@@ -87,6 +97,11 @@ export function MinimalistDashboard({
               setPoints={setPoints}
               hoveredPointId={hoveredPointId}
               onPointHover={setHoveredPointId}
+              handleAddPoint={handleAddPoint}
+              addDialogOpen={addDialogOpen}
+              setAddDialogOpen={setAddDialogOpen}
+              newPoint={newPoint}
+              setNewPoint={setNewPoint}
             />
           </Box>
         </Box>
